@@ -545,4 +545,114 @@ class ProductsService {
       return 0;
     }
   }
+
+  Future<void> clearFavList(BuildContext context) async {
+    try {
+      CollectionReference usersCollection = FirebaseFirestore.instance
+          .collection(usersCollectionName);
+
+      final querySnapshot =
+          await usersCollection
+              .where("Email", isEqualTo: currentUser!.email)
+              .limit(1)
+              .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final userDocRef = querySnapshot.docs.first.reference;
+
+        await userDocRef.update({"Favorites List": []});
+
+        currentUser!.favList.clear();
+
+        print("Favorites list cleared for ${currentUser!.email}");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          buildCustomSnackBar(
+            message: "User document not found.",
+            title: 'Failed!',
+          ),
+        );
+      }
+    } catch (e) {
+      print("Error clearing favorites list: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        buildCustomSnackBar(
+          message: "Failed to clear favorites list. Please try again.",
+          title: 'Failed!',
+        ),
+      );
+    }
+  }
+
+  Future<void> addAllFavoritesToCart(
+    BuildContext context,
+    List<ProductModel> favoritesList, {
+    bool showMessage = true,
+  }) async {
+    try {
+      if (favoritesList.isEmpty) {
+        if (showMessage) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            buildCustomSnackBar(
+              message: "No favorites to add to cart.",
+              title: "Info",
+              backColor: const Color.fromARGB(255, 255, 193, 7),
+            ),
+          );
+        }
+        return;
+      }
+
+      CollectionReference usersCollection = FirebaseFirestore.instance
+          .collection(usersCollectionName);
+
+      final querySnapshot =
+          await usersCollection
+              .where("Email", isEqualTo: currentUser!.email)
+              .limit(1)
+              .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final DocumentReference userDocRef = querySnapshot.docs.first.reference;
+        final userData =
+            querySnapshot.docs.first.data() as Map<String, dynamic>;
+
+        final Map<String, dynamic> shoppingCartData =
+            userData["Shopping Cart"] ?? {};
+
+        Map<String, dynamic> updates = {};
+        int addedCount = 0;
+
+        for (ProductModel product in favoritesList) {
+          final currentQuantity = shoppingCartData[product.id.toString()] ?? 0;
+          final newQuantity = currentQuantity + 1;
+
+          updates["Shopping Cart.${product.id}"] = newQuantity;
+          // This tells Firestore: "Go to the 'Shopping Cart' field, find the '191' key inside it, and set its value to 2"
+
+          currentUser!.shoppingCart[product] = newQuantity;
+          addedCount++;
+        }
+
+        await userDocRef.update(updates);
+
+        print("$addedCount favorites added to cart for ${currentUser!.email}");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          buildCustomSnackBar(
+            message: "User document not found.",
+            title: 'Failed!',
+          ),
+        );
+      }
+    } catch (e) {
+      print("Error adding favorites to cart: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        buildCustomSnackBar(
+          message: "Failed to add favorites to cart. Please try again.",
+          title: 'Failed!',
+        ),
+      );
+    }
+  }
 }

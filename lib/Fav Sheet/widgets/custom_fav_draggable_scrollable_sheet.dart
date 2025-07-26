@@ -128,7 +128,14 @@ class _CustomFavDraggablleScrollableSheetState
             child: CustomButton(
               borderRadius: 0,
               text: "ADD ALL TO CART",
-              onTap: () {},
+              onTap: () async {
+                await ProductsService().addAllFavoritesToCart(
+                  context,
+                  snapshot.data!,
+                );
+                await ProductsService().clearFavList(context);
+                setState(() {});
+              },
               fontWeight: FontWeight.w500,
             ),
           );
