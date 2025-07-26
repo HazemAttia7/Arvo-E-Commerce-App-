@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "318234418267",
+    "project_id": "arvo-fb5da",
+    "storage_bucket": "arvo-fb5da.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:318234418267:android:9b9d88cfc3eddda6d2f37e",
+        "android_client_info": {
+          "package_name": "com.example.e_commerce_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1AGIRN_lbieGEPvkp28pzwpOtrxAzrHM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
