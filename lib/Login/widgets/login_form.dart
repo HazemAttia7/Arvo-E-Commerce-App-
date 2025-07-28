@@ -59,7 +59,7 @@ class _LoginFormState extends State<LoginForm> {
                 return validateEmptyData(data);
               },
               hintText: "Password",
-              isObscured: true,
+              isPassword: true,
             ),
             const SizedBox(height: 20),
             const CustomUnderlinedClickableText(),

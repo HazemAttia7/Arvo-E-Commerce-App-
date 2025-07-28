@@ -64,7 +64,7 @@ class _CreateAccountFormState extends State<CreateAccountForm> {
             CustomTextFormField(
               textController: passwordController,
               hintText: "Password",
-              isObscured: true,
+              isPassword: true,
               validator: (data) {
                 return validatePassword(data);
               },
@@ -75,7 +75,8 @@ class _CreateAccountFormState extends State<CreateAccountForm> {
             const SizedBox(height: 20),
             CustomTextFormField(
               hintText: "Confirm Password",
-              isObscured: true,
+              isPassword: true,
+              isViewable: false,
               validator: (data) {
                 return validateConfirmPassword(data, passwordController.text);
               },
@@ -113,7 +114,7 @@ class _CreateAccountFormState extends State<CreateAccountForm> {
                           name: userName!,
                           email: userEmail!,
                           favList: [],
-                          shoppingCart: {}
+                          shoppingCart: {},
                         );
                         await realmPreferenceService.setRememberMePreference(
                           remember: true,
