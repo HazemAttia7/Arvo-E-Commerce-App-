@@ -8,7 +8,7 @@ class ContinueWithSocialButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        showCustomDialog(context, title: "Not Implemented Yet");
+        showAlertCustomDialog(context, title: "Not Implemented Yet");
       },
       child: Image.asset(image, width: 35),
     );

@@ -28,15 +28,15 @@ class OrdersService {
 
       await ordersCollection.add(orderData);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Order ${order.orderId} placed successfully!",
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
-          ),
-          backgroundColor: Colors.green,
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: Text(
+      //       "Order ${order.orderId} placed successfully!",
+      //       style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+      //     ),
+      //     backgroundColor: Colors.green,
+      //   ),
+      // );
 
       return true;
     } on FirebaseException catch (e) {

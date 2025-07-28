@@ -8,6 +8,7 @@ import 'package:e_commerce_app/Orders/services/orders_service.dart';
 import 'package:e_commerce_app/global/helper/methods.dart';
 import 'package:e_commerce_app/global/models/product_model.dart';
 import 'package:e_commerce_app/global/services/products_service.dart';
+import 'package:e_commerce_app/global/widgets/custom_dialog.dart';
 import 'package:e_commerce_app/global/widgets/custom_loading_indicator.dart';
 import 'package:flutter/material.dart';
 
@@ -156,7 +157,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                         );
                         return;
                       }
-                      await OrdersService.addOrder(
+                      if (await OrdersService.addOrder(
                         context,
                         totalPrice: subtotal + shippingPrice + taxes,
                         triggerLoading: () {
@@ -164,16 +165,30 @@ class _CheckoutViewState extends State<CheckoutView> {
                             isLoading = true;
                           });
                         },
-                      );
-                      await ProductsService().clearShoppingCart(context);
-                      setState(() {
-                        isLoading = false;
-                      });
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        "/", // This refers to the home route
-                        (route) => false,
-                      );
+                      )) {
+                        await showCustomDialog(
+                          context,
+                          title: "Order",
+                          subtitle: 'Added Successfully',
+                          image: 'assets/images/success.png', state: enState.success,
+                        );
+                        await ProductsService().clearShoppingCart(context);
+                        setState(() {
+                          isLoading = false;
+                        });
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          "/", // This refers to the home route
+                          (route) => false,
+                        );
+                      } else {
+                        showCustomDialog(
+                          context,
+                          title: "Order",
+                          subtitle: 'Failed to add',
+                          image: 'assets/images/fail.png', state: enState.failure,
+                        );
+                      }
                     },
                     borderRadius: 40,
                   ),

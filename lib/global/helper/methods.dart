@@ -1,6 +1,7 @@
+import 'package:e_commerce_app/global/widgets/custom_dialog.dart';
 import 'package:flutter/material.dart';
 
-Future<dynamic> showCustomDialog(
+Future<dynamic> showAlertCustomDialog(
   BuildContext context, {
   required String title,
 }) {
@@ -82,5 +83,21 @@ void showDefaultErrorMessage(BuildContext context) {
     const SnackBar(
       content: Text("Oops something went wrong. Please try again."),
     ),
+  );
+}
+
+Future<dynamic> showCustomDialog(
+  BuildContext context, {
+  required String title,
+  required String subtitle,
+  required String image,
+  required enState state,
+}) {
+  return showDialog(
+    context: context,
+    barrierDismissible: true, // Allow dismissing by tapping outside
+    builder: (BuildContext context) {
+      return CustomDialog(title: title, subtitle: subtitle, image: image, state: state,);
+    },
   );
 }

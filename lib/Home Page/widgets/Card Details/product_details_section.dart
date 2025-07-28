@@ -133,9 +133,7 @@ class _ProductDetailsSectionState extends State<ProductDetailsSection> {
                         context,
                         widget.product,
                       );
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        cartIconKey.currentState?.refreshCart();
-                      });
+                      CartNotifier.updateCartCount(context);
                     },
                   ),
                 ],
