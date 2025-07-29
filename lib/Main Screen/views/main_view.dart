@@ -132,6 +132,7 @@ class _MainViewState extends State<MainView> {
                                   const CustomCartDraggablleScrollableSheet(),
                         ).then((result) {
                           setState(() {
+                            CartNotifier.updateCartCount(context);
                             _appBarSelectedIndex = _prevAppBarSelectedIndex;
                           });
                         });

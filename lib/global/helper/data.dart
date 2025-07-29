@@ -4,4 +4,4 @@ UserModel? currentUser;
 
 const String usersCollectionName = "users";
 
- const String ordersCollectionName = "Orders";
+ const String ordersCollectionName = "orders";

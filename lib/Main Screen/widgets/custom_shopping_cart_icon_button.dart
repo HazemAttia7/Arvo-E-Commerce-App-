@@ -27,7 +27,11 @@ class CartNotifier {
 class CustomShoppingCartIconButton extends StatefulWidget {
   final VoidCallback onTap;
   final bool isSelected;
-  const CustomShoppingCartIconButton({super.key, required this.onTap, required this.isSelected});
+  const CustomShoppingCartIconButton({
+    super.key,
+    required this.onTap,
+    required this.isSelected,
+  });
 
   @override
   State<CustomShoppingCartIconButton> createState() =>
@@ -62,8 +66,8 @@ class _CustomShoppingCartIconButtonState
               ),
               if (count > 0)
                 Positioned(
-                  top: -10,
-                  right: -14,
+                  top: -9,
+                  right: 0,
                   child: Container(
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(

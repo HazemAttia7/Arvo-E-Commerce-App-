@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_commerce_app/Create%20Account/models/temp_user_model.dart';
 import 'package:e_commerce_app/global/models/product_model.dart';
 import 'package:e_commerce_app/global/models/user_model.dart';
 import 'package:e_commerce_app/global/helper/data.dart';
@@ -115,15 +116,14 @@ static Future<Map<ProductModel, int>> _getMapFromJSON(
 
   static Future<bool> performCreateAccount(
     BuildContext context, {
-    required UserModel userData,
-    required String password,
+    required TempUserModel userData,
     required VoidCallback triggerLoading,
   }) async {
     try {
       triggerLoading();
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: userData.email.trim(),
-        password: password.trim(),
+        password: userData.password.trim(),
       );
       CollectionReference usersCollection = FirebaseFirestore.instance
           .collection(usersCollectionName);

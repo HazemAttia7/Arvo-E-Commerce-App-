@@ -29,6 +29,7 @@ class _CustomDraggablleScrollableSheetState
   void refreshCart() {
     setState(() {
       _initPerformServce = ProductsService().getShoppingCartList(context);
+      
     });
   }
 

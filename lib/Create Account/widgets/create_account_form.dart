@@ -1,14 +1,11 @@
 import 'package:e_commerce_app/Create%20Account/helper/methods.dart';
-import 'package:e_commerce_app/Main%20Screen/views/main_view.dart';
-import 'package:e_commerce_app/global/models/user_model.dart';
+import 'package:e_commerce_app/Create%20Account/models/temp_user_model.dart';
+import 'package:e_commerce_app/Create%20Account/services/email_service.dart';
+import 'package:e_commerce_app/Create%20Account/views/verify_email_view.dart';
 import 'package:e_commerce_app/Landing%20Page/widgets/custom_button.dart';
-import 'package:e_commerce_app/global/helper/data.dart';
-import 'package:e_commerce_app/global/services/auth_service.dart';
-import 'package:e_commerce_app/global/services/realm_preference_service.dart';
 import 'package:e_commerce_app/global/widgets/custom_loading_indicator.dart';
 import 'package:e_commerce_app/global/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class CreateAccountForm extends StatefulWidget {
@@ -29,10 +26,6 @@ class _CreateAccountFormState extends State<CreateAccountForm> {
   bool isLoading = false;
   @override
   Widget build(BuildContext context) {
-    final realmPreferenceService = Provider.of<RealmPreferenceService>(
-      context,
-      listen: false,
-    );
     return AbsorbPointer(
       absorbing: isLoading,
       child: Form(
@@ -89,38 +82,23 @@ class _CreateAccountFormState extends State<CreateAccountForm> {
                   onTap: () async {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
-                      UserModel userData = UserModel(
+                      TempUserModel tempUserModel = TempUserModel(
                         name: userName!,
                         email: userEmail!,
+                        password: pass!,
                         favList: [],
                         shoppingCart: {},
                       );
-                      bool accountCreated =
-                          await AuthService.performCreateAccount(
-                            context,
-                            userData: userData,
-                            password: pass!,
-                            triggerLoading: () {
-                              setState(() {
-                                isLoading = true;
-                              });
-                            },
-                          );
-                      setState(() {
-                        isLoading = false;
-                      });
-                      if (accountCreated) {
-                        currentUser = UserModel(
-                          name: userName!,
-                          email: userEmail!,
-                          favList: [],
-                          shoppingCart: {},
+                      if (await EmailService.sendOTPWithPackage(userEmail!)) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => VerifyEmailView(
+                                  tempUserModel: tempUserModel,
+                                ),
+                          ),
                         );
-                        await realmPreferenceService.setRememberMePreference(
-                          remember: true,
-                          email: userEmail!,
-                        );
-                        Navigator.pushReplacementNamed(context, MainView.route);
                       }
                     } else {
                       setState(() {
