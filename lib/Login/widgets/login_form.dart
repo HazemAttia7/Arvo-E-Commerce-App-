@@ -1,3 +1,4 @@
+import 'package:e_commerce_app/Login/views/forgot_password_view.dart';
 import 'package:e_commerce_app/global/models/user_model.dart';
 import 'package:e_commerce_app/Landing%20Page/widgets/custom_button.dart';
 import 'package:e_commerce_app/Login/helper/methods.dart';
@@ -62,7 +63,16 @@ class _LoginFormState extends State<LoginForm> {
               isPassword: true,
             ),
             const SizedBox(height: 20),
-            const CustomUnderlinedClickableText(),
+            CustomUnderlinedClickableText(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ForgotPasswordView(),
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 25),
             isLoading
                 ? const CustomLoadingIndicator()

@@ -59,7 +59,7 @@ class AuthService {
           userData,
           "Favorites List",
         );
-        Map<ProductModel,int> shoppingCartMap = await _getMapFromJSON(
+        Map<ProductModel, int> shoppingCartMap = await _getMapFromJSON(
           userData,
           "Shopping Cart",
         );
@@ -93,26 +93,26 @@ class AuthService {
     return productsList;
   }
 
-static Future<Map<ProductModel, int>> _getMapFromJSON(
-  Map<String, dynamic> userData,
-  String mapName,
-) async {
-  final Map<String, dynamic> productsData = userData[mapName] ?? {};
-  final Map<ProductModel, int> productsMap = {};
-  
-  for (var entry in productsData.entries) {
-    final int productID = int.parse(entry.key);
-    final int quantity = entry.value;
-    final ProductModel? product = await ProductsService().getProductById(
-      productID,
-    );
-    if (product != null) {
-      productsMap[product] = quantity;
+  static Future<Map<ProductModel, int>> _getMapFromJSON(
+    Map<String, dynamic> userData,
+    String mapName,
+  ) async {
+    final Map<String, dynamic> productsData = userData[mapName] ?? {};
+    final Map<ProductModel, int> productsMap = {};
+
+    for (var entry in productsData.entries) {
+      final int productID = int.parse(entry.key);
+      final int quantity = entry.value;
+      final ProductModel? product = await ProductsService().getProductById(
+        productID,
+      );
+      if (product != null) {
+        productsMap[product] = quantity;
+      }
     }
+
+    return productsMap;
   }
-  
-  return productsMap;
-}
 
   static Future<bool> performCreateAccount(
     BuildContext context, {
@@ -169,5 +169,49 @@ static Future<Map<ProductModel, int>> _getMapFromJSON(
       showDefaultErrorMessage(context);
     }
     return false;
+  }
+
+  static Future<bool> isEmailExist(
+    BuildContext context, {
+    required String email,
+  }) async {
+    try {
+      CollectionReference users = FirebaseFirestore.instance.collection(
+        usersCollectionName,
+      );
+      final querySnapshot =
+          await users.where('Email', isEqualTo: email).limit(1).get();
+      if (querySnapshot.docs.isNotEmpty) {
+        return true;
+      } else {
+        showErrorMessage(context, title: "Oops!", message: "Email not found");
+        return false;
+      }
+    } catch (e) {
+      showErrorMessage(context, title: "Oops!", message: "Email not found");
+      return false;
+    }
+  }
+
+  static Future<bool> sendPasswordReset({
+    required BuildContext context,
+    required String email,
+    required VoidCallback triggerLoading,
+  }) async {
+    try {
+      triggerLoading();
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      showErrorMessage(
+        context,
+        title: "Oops!",
+        message: getErrorMessage(e.code),
+      );
+      return false;
+    } catch (e) {
+      showErrorMessage(context, title: "Oops!", message: e.toString());
+      return false;
+    }
   }
 }

@@ -16,7 +16,6 @@ import 'package:provider/provider.dart' as provider;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // RealmPreferenceService().setRememberMePreference(remember: false);
   runApp(
     ProviderScope(
       child: provider.Provider<RealmPreferenceService>(
