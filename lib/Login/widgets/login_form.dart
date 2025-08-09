@@ -44,7 +44,7 @@ class _LoginFormState extends State<LoginForm> {
             const SizedBox(height: 20),
             CustomTextFormField(
               onSaved: (data) {
-                email = data;
+                email = data!.trim();
               },
               validator: (data) {
                 return validateEmptyData(data);

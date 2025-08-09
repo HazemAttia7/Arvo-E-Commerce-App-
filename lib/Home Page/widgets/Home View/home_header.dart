@@ -1,5 +1,5 @@
 import 'package:e_commerce_app/Home%20Page/widgets/custom_playfair_text.dart';
-import 'package:e_commerce_app/Profile%20Page/views/profile_view.dart';
+import 'package:e_commerce_app/Profile%20Orders%20Page/Profile/views/profile_view.dart';
 import 'package:e_commerce_app/global/helper/data.dart';
 import 'package:flutter/material.dart';
 

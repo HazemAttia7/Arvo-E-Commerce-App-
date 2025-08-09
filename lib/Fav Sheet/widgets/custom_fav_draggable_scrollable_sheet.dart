@@ -1,5 +1,9 @@
 import 'dart:ui';
 import 'package:e_commerce_app/Fav%20Sheet/widgets/fav_product_card.dart';
+import 'package:e_commerce_app/Main%20Screen/widgets/custom_shopping_cart_icon_button.dart';
+import 'package:e_commerce_app/global/helper/methods.dart';
+import 'package:e_commerce_app/global/widgets/custom_dialog.dart';
+import 'package:e_commerce_app/global/widgets/custom_loading_indicator.dart';
 import 'package:e_commerce_app/global/widgets/little_grabber_handle.dart';
 import 'package:e_commerce_app/Landing%20Page/widgets/custom_button.dart';
 import 'package:e_commerce_app/global/models/product_model.dart';
@@ -18,6 +22,8 @@ class _CustomFavDraggablleScrollableSheetState
     extends State<CustomFavDraggablleScrollableSheet> {
   late Future<List<ProductModel>?> _initPerformServce;
   bool isEmptyList = true;
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -104,7 +110,7 @@ class _CustomFavDraggablleScrollableSheetState
                       ),
                     ),
                     const SizedBox(height: 20),
-                    decideBuildButtonOrNor(),
+                    decideBuildButtonOrNot(),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -116,7 +122,7 @@ class _CustomFavDraggablleScrollableSheetState
     );
   }
 
-  FutureBuilder<List<ProductModel>?> decideBuildButtonOrNor() {
+  FutureBuilder<List<ProductModel>?> decideBuildButtonOrNot() {
     return FutureBuilder<List<ProductModel>?>(
       future: _initPerformServce,
       builder: (context, snapshot) {
@@ -125,19 +131,36 @@ class _CustomFavDraggablleScrollableSheetState
             snapshot.data!.isNotEmpty) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 75),
-            child: CustomButton(
-              borderRadius: 0,
-              text: "ADD ALL TO CART",
-              onTap: () async {
-                await ProductsService().addAllFavoritesToCart(
-                  context,
-                  snapshot.data!,
-                );
-                await ProductsService().clearFavList(context);
-                setState(() {});
-              },
-              fontWeight: FontWeight.w500,
-            ),
+            child:
+                isLoading
+                    ? const CustomLoadingIndicator(borderRadius: 0)
+                    : CustomButton(
+                      borderRadius: 0,
+                      text: "ADD ALL TO CART",
+                      onTap: () async {
+                        setState(() {
+                          isLoading = true;
+                        });
+                        bool isAllAddedToFavoritesList = await ProductsService()
+                            .addAllFavoritesToList(context, snapshot.data!);
+                        bool isFavListCleared = await ProductsService()
+                            .clearFavList(context);
+                        setState(() {
+                          isLoading = false;
+                        });
+                        if (isAllAddedToFavoritesList && isFavListCleared) {
+                          showCustomDialog(
+                            context,
+                            title: "Products",
+                            subtitle: "Added Successfully !",
+                            image: "assets/images/success.png",
+                            state: enState.success,
+                          );
+                          CartNotifier.updateCartCount(context);
+                        }
+                      },
+                      fontWeight: FontWeight.w500,
+                    ),
           );
         }
         return const SizedBox.shrink();

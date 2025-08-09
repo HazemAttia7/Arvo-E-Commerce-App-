@@ -33,7 +33,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
               return validateEmail(data);
             },
             onSaved: (data) {
-              userEmail = data!;
+              userEmail = data!.trim();
             },
           ),
           const SizedBox(height: 15),

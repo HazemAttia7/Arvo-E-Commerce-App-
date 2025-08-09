@@ -4,7 +4,8 @@ import 'package:e_commerce_app/Checkout/widgets/price_summary_row.dart';
 import 'package:e_commerce_app/Home%20Page/views/card_details_view.dart';
 import 'package:e_commerce_app/Home%20Page/widgets/custom_back_button.dart';
 import 'package:e_commerce_app/Landing%20Page/widgets/custom_button.dart';
-import 'package:e_commerce_app/Orders/services/orders_service.dart';
+import 'package:e_commerce_app/Profile%20Orders%20Page/Orders/models/order_model.dart';
+import 'package:e_commerce_app/Profile%20Orders%20Page/Orders/services/orders_service.dart';
 import 'package:e_commerce_app/global/helper/methods.dart';
 import 'package:e_commerce_app/global/models/product_model.dart';
 import 'package:e_commerce_app/global/services/products_service.dart';
@@ -23,7 +24,7 @@ class CheckoutView extends StatefulWidget {
 
 class _CheckoutViewState extends State<CheckoutView> {
   void refreshCart() async {
-    final updatedMap = await ProductsService().getShoppingCartList(context);
+    final updatedMap = await ProductsService().getShoppingCartMap(context);
     if (mounted) {
       setState(() {
         widget.productsMap = updatedMap;
@@ -35,6 +36,7 @@ class _CheckoutViewState extends State<CheckoutView> {
   bool cashSelected = false;
   bool visaSelected = false;
   final double shippingPrice = 7, taxes = 12.75;
+  double totalPrice = 0;
   double subtotal = 0;
   @override
   Widget build(BuildContext context) {
@@ -50,6 +52,7 @@ class _CheckoutViewState extends State<CheckoutView> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15),
         child: SingleChildScrollView(
+          clipBehavior: Clip.none,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -92,7 +95,10 @@ class _CheckoutViewState extends State<CheckoutView> {
                           context,
                           MaterialPageRoute(
                             builder:
-                                (context) => CardDetailsView(product: product),
+                                (context) => CardDetailsView(
+                                  product: product,
+                                  isPrevScreenCheckout: true,
+                                ),
                           ),
                         );
                         refreshCart();
@@ -139,7 +145,7 @@ class _CheckoutViewState extends State<CheckoutView> {
 
               PriceSummaryRow(
                 text: 'Total',
-                priceToShow: subtotal + shippingPrice + taxes,
+                priceToShow: totalPrice = subtotal + shippingPrice + taxes,
               ),
               const SizedBox(height: 35),
               isLoading
@@ -157,20 +163,30 @@ class _CheckoutViewState extends State<CheckoutView> {
                         );
                         return;
                       }
-                      if (await OrdersService.addOrder(
+                      String? OrderID = await OrdersService.addOrder(
                         context,
-                        totalPrice: subtotal + shippingPrice + taxes,
                         triggerLoading: () {
                           setState(() {
                             isLoading = true;
                           });
                         },
-                      )) {
+                        order: OrderModel(
+                          products: widget.productsMap,
+                          orderDate: DateTime.now(),
+                          totalPrice: totalPrice,
+                          paymentMethod:
+                              visaSelected
+                                  ? enPaymentMethod.visa
+                                  : enPaymentMethod.cash,
+                        ),
+                      );
+                      if (OrderID != null) {
                         await showCustomDialog(
                           context,
-                          title: "Order",
+                          title: "Order $OrderID",
                           subtitle: 'Added Successfully',
-                          image: 'assets/images/success.png', state: enState.success,
+                          image: 'assets/images/success.png',
+                          state: enState.success,
                         );
                         await ProductsService().clearShoppingCart(context);
                         setState(() {
@@ -186,8 +202,12 @@ class _CheckoutViewState extends State<CheckoutView> {
                           context,
                           title: "Order",
                           subtitle: 'Failed to add',
-                          image: 'assets/images/fail.png', state: enState.failure,
+                          image: 'assets/images/fail.png',
+                          state: enState.failure,
                         );
+                        setState(() {
+                          isLoading = false;
+                        });
                       }
                     },
                     borderRadius: 40,

@@ -190,6 +190,17 @@ class ProductsService {
     return [];
   }
 
+  // Helper method to safely show SnackBar
+  static void _showSafeSnackBar(BuildContext context, SnackBar snackBar) {
+    try {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+    } catch (e) {
+      debugPrint("Could not show SnackBar: Context is no longer valid");
+    }
+  }
+
   Future<void> addProductToFavList(
     BuildContext context,
     ProductModel product,
@@ -211,7 +222,8 @@ class ProductsService {
             userData['Favorites List'] as List<dynamic>? ?? [];
 
         if (currentFavListIds.contains(product.id)) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          _showSafeSnackBar(
+            context,
             buildCustomSnackBar(
               message: "product is already in your favorites.",
               title: "Oops!",
@@ -224,7 +236,8 @@ class ProductsService {
           "Favorites List": FieldValue.arrayUnion([product.id]),
         });
         currentUser!.favList.add(product);
-        ScaffoldMessenger.of(context).showSnackBar(
+        _showSafeSnackBar(
+          context,
           buildCustomSnackBar(
             message: "Product Added Successfully.",
             title: "Success!",
@@ -232,7 +245,8 @@ class ProductsService {
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _showSafeSnackBar(
+          context,
           buildCustomSnackBar(
             message: "User document not found.",
             title: 'Failed!',
@@ -240,8 +254,9 @@ class ProductsService {
         );
       }
     } catch (e) {
-      print("Error adding product to fav list: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
+      debugPrint("Error adding product to fav list: $e");
+      _showSafeSnackBar(
+        context,
         buildCustomSnackBar(
           message: "Failed to add product to favorites. Please try again.",
           title: 'Failed!',
@@ -275,7 +290,7 @@ class ProductsService {
           (favProduct) => favProduct.id == product.id,
         );
 
-        print(
+        debugPrint(
           "Product ${product.id} removed from favorites for ${currentUser!.email}",
         );
       } else {
@@ -287,7 +302,9 @@ class ProductsService {
         );
       }
     } catch (e) {
-      print("Error removing product from fav list: $e"); // Log the actual error
+      debugPrint(
+        "Error removing product from fav list: $e",
+      ); // Log the actual error
       ScaffoldMessenger.of(context).showSnackBar(
         buildCustomSnackBar(
           message: "Failed to remove product from favorites. Please try again.",
@@ -297,7 +314,7 @@ class ProductsService {
     }
   }
 
-  Future<Map<ProductModel, int>> getShoppingCartList(
+  Future<Map<ProductModel, int>> getShoppingCartMap(
     BuildContext context,
   ) async {
     try {
@@ -397,7 +414,7 @@ class ProductsService {
         );
       }
     } catch (e) {
-      print("Error adding product to shopping cart: $e");
+      debugPrint("Error adding product to shopping cart: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         buildCustomSnackBar(
           message: "Failed to add product to shopping cart. Please try again.",
@@ -444,7 +461,7 @@ class ProductsService {
           currentUser!.shoppingCart.remove(product);
         }
 
-        print(
+        debugPrint(
           "Product ${product.id} quantity updated in Shopping Cart for ${currentUser!.email}",
         );
       } else {
@@ -456,9 +473,55 @@ class ProductsService {
         );
       }
     } catch (e) {
-      print(
+      debugPrint(
         "Error removing product from shopping cart: $e",
       ); // Log the actual error
+      ScaffoldMessenger.of(context).showSnackBar(
+        buildCustomSnackBar(
+          message:
+              "Failed to remove product from Shopping Cart. Please try again.",
+          title: 'Failed!',
+        ),
+      );
+    }
+  }
+
+  Future<void> removeProductEntirelyFromShoppingCart(
+    BuildContext context,
+    ProductModel product,
+  ) async {
+    try {
+      CollectionReference usersCollection = FirebaseFirestore.instance
+          .collection(usersCollectionName);
+
+      final querySnapshot =
+          await usersCollection
+              .where("Email", isEqualTo: currentUser!.email)
+              .limit(1)
+              .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final userDocRef = querySnapshot.docs.first.reference;
+
+        await userDocRef.update({
+          "Shopping Cart.${product.id}": FieldValue.delete(),
+        });
+
+        currentUser!.shoppingCart.remove(product);
+
+        debugPrint(
+          "Product ${product.id} removed entirely from Shopping Cart for ${currentUser!.email}",
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          buildCustomSnackBar(
+            message: "User document not found.",
+            title: 'Failed!',
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error removing product entirely from shopping cart: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         buildCustomSnackBar(
           message:
@@ -487,7 +550,7 @@ class ProductsService {
 
         currentUser!.shoppingCart.clear();
 
-        print("Shopping cart cleared for ${currentUser!.email}");
+        debugPrint("Shopping cart cleared for ${currentUser!.email}");
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           buildCustomSnackBar(
@@ -497,7 +560,7 @@ class ProductsService {
         );
       }
     } catch (e) {
-      print("Error clearing shopping cart: $e");
+      debugPrint("Error clearing shopping cart: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         buildCustomSnackBar(
           message: "Failed to clear shopping cart. Please try again.",
@@ -535,7 +598,7 @@ class ProductsService {
       }
       return 0;
     } catch (e) {
-      print("Error getting total cart quantity: $e");
+      debugPrint("Error getting total cart quantity: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         buildCustomSnackBar(
           title: "Error",
@@ -546,7 +609,7 @@ class ProductsService {
     }
   }
 
-  Future<void> clearFavList(BuildContext context) async {
+  Future<bool> clearFavList(BuildContext context) async {
     try {
       CollectionReference usersCollection = FirebaseFirestore.instance
           .collection(usersCollectionName);
@@ -564,7 +627,8 @@ class ProductsService {
 
         currentUser!.favList.clear();
 
-        print("Favorites list cleared for ${currentUser!.email}");
+        debugPrint("Favorites list cleared for ${currentUser!.email}");
+        return true;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           buildCustomSnackBar(
@@ -572,19 +636,21 @@ class ProductsService {
             title: 'Failed!',
           ),
         );
+        return false;
       }
     } catch (e) {
-      print("Error clearing favorites list: $e");
+      debugPrint("Error clearing favorites list: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         buildCustomSnackBar(
           message: "Failed to clear favorites list. Please try again.",
           title: 'Failed!',
         ),
       );
+      return false;
     }
   }
 
-  Future<void> addAllFavoritesToCart(
+  Future<bool> addAllFavoritesToList(
     BuildContext context,
     List<ProductModel> favoritesList, {
     bool showMessage = true,
@@ -600,7 +666,7 @@ class ProductsService {
             ),
           );
         }
-        return;
+        return false;
       }
 
       CollectionReference usersCollection = FirebaseFirestore.instance
@@ -636,7 +702,10 @@ class ProductsService {
 
         await userDocRef.update(updates);
 
-        print("$addedCount favorites added to cart for ${currentUser!.email}");
+        debugPrint(
+          "$addedCount favorites added to cart for ${currentUser!.email}",
+        );
+        return true;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           buildCustomSnackBar(
@@ -644,15 +713,17 @@ class ProductsService {
             title: 'Failed!',
           ),
         );
+        return false;
       }
     } catch (e) {
-      print("Error adding favorites to cart: $e");
+      debugPrint("Error adding favorites to cart: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         buildCustomSnackBar(
           message: "Failed to add favorites to cart. Please try again.",
           title: 'Failed!',
         ),
       );
+      return false;
     }
   }
 }

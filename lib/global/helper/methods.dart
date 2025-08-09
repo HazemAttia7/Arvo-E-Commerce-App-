@@ -11,7 +11,7 @@ Future<dynamic> showAlertCustomDialog(
         (context) => AlertDialog(
           title: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 40),
-            child: Text(title),
+            child: Text(title,textAlign: TextAlign.center,),
           ),
         ),
   );
@@ -100,4 +100,16 @@ Future<dynamic> showCustomDialog(
       return CustomDialog(title: title, subtitle: subtitle, image: image, state: state,);
     },
   );
+}
+
+String getEmailEncrypted(String email) {
+  int atIndex = email.indexOf("@");
+
+  if (atIndex <= 1) return email;
+
+  String firstChar = email[0];
+  String masked = '*' * (atIndex - 1);
+  String domain = email.substring(atIndex);
+
+  return '$firstChar$masked$domain';
 }

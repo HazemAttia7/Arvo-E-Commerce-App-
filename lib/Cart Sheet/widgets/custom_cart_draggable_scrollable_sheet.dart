@@ -23,13 +23,12 @@ class _CustomDraggablleScrollableSheetState
   @override
   void initState() {
     super.initState();
-    _initPerformServce = ProductsService().getShoppingCartList(context);
+    _initPerformServce = ProductsService().getShoppingCartMap(context);
   }
 
   void refreshCart() {
     setState(() {
-      _initPerformServce = ProductsService().getShoppingCartList(context);
-      
+      _initPerformServce = ProductsService().getShoppingCartMap(context);
     });
   }
 

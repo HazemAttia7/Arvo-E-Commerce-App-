@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 
 class ClickableModernUnderlinedText extends StatelessWidget {
-  const ClickableModernUnderlinedText({super.key, required this.text,  this.underlineWidth = 105, required this.onTap});
+  const ClickableModernUnderlinedText({
+    super.key,
+    required this.text,
+    this.underlineWidth = 105,
+    required this.onTap,
+    this.fontWeight = FontWeight.w500,
+    this.underlineThickness = 3,
+    this.fontSize = 16
+  });
   final String text;
   final double underlineWidth;
   final VoidCallback onTap;
+  final FontWeight fontWeight;
+  final double  fontSize;
+  final double underlineThickness;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -13,11 +24,15 @@ class ClickableModernUnderlinedText extends StatelessWidget {
         children: [
           Text(
             text.toUpperCase(),
-            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+            style: TextStyle(fontWeight: fontWeight, fontSize: fontSize,),
           ),
-           SizedBox(
+          SizedBox(
             width: underlineWidth,
-            child: const Divider(thickness: 3, color: Colors.black, height: 7),
+            child: Divider(
+              thickness: underlineThickness,
+              color: Colors.black,
+              height: 7,
+            ),
           ),
         ],
       ),

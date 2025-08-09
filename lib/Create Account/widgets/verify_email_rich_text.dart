@@ -1,3 +1,4 @@
+import 'package:e_commerce_app/global/helper/methods.dart';
 import 'package:flutter/material.dart';
 
 class VerifyEmailRichText extends StatelessWidget {
@@ -31,14 +32,4 @@ class VerifyEmailRichText extends StatelessWidget {
   }
 }
 
-String getEmailEncrypted(String email) {
-  int atIndex = email.indexOf("@");
 
-  if (atIndex <= 1) return email;
-
-  String firstChar = email[0];
-  String masked = '*' * (atIndex - 1);
-  String domain = email.substring(atIndex);
-
-  return '$firstChar$masked$domain';
-}

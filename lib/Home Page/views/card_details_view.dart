@@ -5,8 +5,14 @@ import 'package:e_commerce_app/global/models/product_model.dart';
 import 'package:flutter/material.dart';
 
 class CardDetailsView extends StatelessWidget {
-  const CardDetailsView({super.key, required this.product});
+  const CardDetailsView({
+    super.key,
+    required this.product,
+    this.isPrevScreenCheckout = false,
+  });
   final ProductModel product;
+  final bool isPrevScreenCheckout;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +31,10 @@ class CardDetailsView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 15),
-                ProductDetailsSection(product: product),
+                ProductDetailsSection(
+                  product: product,
+                  isPrevScreenCheckout: isPrevScreenCheckout,
+                ),
                 const SizedBox(height: 35),
                 Expanded(
                   child: CustomPageViewWithHeader(

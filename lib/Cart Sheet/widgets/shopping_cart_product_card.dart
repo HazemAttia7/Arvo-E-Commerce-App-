@@ -1,4 +1,5 @@
 import 'package:e_commerce_app/Cart%20Sheet/widgets/quantity_widget.dart';
+import 'package:e_commerce_app/Home%20Page/widgets/clickable_modern_underlined_text.dart';
 import 'package:e_commerce_app/Home%20Page/widgets/custom_image_with_indicator_while_loading.dart';
 import 'package:e_commerce_app/Home%20Page/widgets/custom_playfair_text.dart';
 import 'package:e_commerce_app/Home%20Page/widgets/price_text.dart';
@@ -26,7 +27,7 @@ class _ShoppingCartProductCardState extends State<ShoppingCartProductCard> {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           child: Column(
@@ -41,30 +42,49 @@ class _ShoppingCartProductCardState extends State<ShoppingCartProductCard> {
                   boxFit: BoxFit.contain,
                 ),
               ),
-              QuantityWidget(
-                subOnTap: () async {
-                  await ProductsService().removeProductFromShoppingCart(
-                    context,
-                    widget.cartProduct,
-                  );
-                  final currentQuantity =
-                      currentUser?.shoppingCart[widget.cartProduct] ?? 0;
-                  if (currentQuantity <= 0) {
-                    // Notify parent to refresh and remove this product
-                    widget.onQuantityChanged();
-                  } else {
-                    setState(() {});
-                  }
-                },
-                addOnTap: () async {
-                  await ProductsService().addProductToShoppingCart(
-                    context,
-                    widget.cartProduct,
-                    showMessage: false,
-                  );
-                  setState(() {});
-                },
-                quantity: currentUser?.shoppingCart[widget.cartProduct] ?? 0,
+              Column(
+                children: [
+                  QuantityWidget(
+                    subOnTap: () async {
+                      await ProductsService().removeProductFromShoppingCart(
+                        context,
+                        widget.cartProduct,
+                      );
+                      final currentQuantity =
+                          currentUser?.shoppingCart[widget.cartProduct] ?? 0;
+                      if (currentQuantity <= 0) {
+                        // Notify parent to refresh and remove this product
+                        widget.onQuantityChanged();
+                      } else {
+                        setState(() {});
+                      }
+                    },
+                    addOnTap: () async {
+                      await ProductsService().addProductToShoppingCart(
+                        context,
+                        widget.cartProduct,
+                        showMessage: false,
+                      );
+                      setState(() {});
+                    },
+                    quantity:
+                        currentUser?.shoppingCart[widget.cartProduct] ?? 0,
+                  ),
+                  const SizedBox(height: 5),
+                  ClickableModernUnderlinedText(
+                    text: "Remove All",
+                    onTap: () async {
+                      // Remove all quantities of this specific product from cart
+                      await ProductsService()
+                          .removeProductEntirelyFromShoppingCart(
+                            context,
+                            widget.cartProduct,
+                          );
+                      // Notify parent to refresh the cart UI
+                      widget.onQuantityChanged();
+                    },
+                  ),
+                ],
               ),
             ],
           ),
@@ -73,7 +93,6 @@ class _ShoppingCartProductCardState extends State<ShoppingCartProductCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
               if (widget.cartProduct.brand != null)
                 CustomPlayFairText(
                   fontSize: 22,
