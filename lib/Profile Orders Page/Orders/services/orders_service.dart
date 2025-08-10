@@ -23,8 +23,50 @@ class OrdersService {
           final userData =
               querySnapshot.docs.first.data() as Map<String, dynamic>;
           final Map<String, dynamic> ordersData = userData["Orders"] ?? {};
-          final List<OrderModel> orders = [];
 
+          if (ordersData.isEmpty) {
+            return [];
+          }
+
+          // Collect all unique product IDs first
+          final Set<int> allProductIds = {};
+          for (var orderEntry in ordersData.values) {
+            final Map<String, dynamic> productsData =
+                orderEntry['products'] ?? {};
+            for (var productIdString in productsData.keys) {
+              allProductIds.add(int.parse(productIdString));
+            }
+          }
+
+          // Fetch all products in batch (much faster)
+          final Map<int, ProductModel> productCache = {};
+          if (allProductIds.isNotEmpty) {
+            // Option 1: If you can modify ProductsService to support batch fetching
+            // final List<ProductModel> products = await ProductsService().getProductsByIds(allProductIds.toList());
+            // for (var product in products) {
+            //   productCache[product.id] = product;
+            // }
+
+            // Option 2: Parallel fetching (faster than sequential)
+            final List<Future<ProductModel?>> productFutures =
+                allProductIds
+                    .map((id) => ProductsService().getProductById(id))
+                    .toList();
+
+            final List<ProductModel?> products = await Future.wait(
+              productFutures,
+            );
+
+            for (int i = 0; i < products.length; i++) {
+              final product = products[i];
+              if (product != null) {
+                productCache[allProductIds.elementAt(i)] = product;
+              }
+            }
+          }
+
+          // Now build orders using cached products
+          final List<OrderModel> orders = [];
           for (var entry in ordersData.entries) {
             final String orderId = entry.key;
             final Map<String, dynamic> orderData = entry.value;
@@ -34,6 +76,7 @@ class OrdersService {
                 (orderData['orderDate'] as Timestamp).toDate();
             final double totalPrice =
                 (orderData['totalPrice'] ?? 0.0).toDouble();
+
             // Parse payment method
             final String paymentMethodString =
                 orderData['Payment Method'] ?? 'Cash';
@@ -42,7 +85,7 @@ class OrdersService {
                     ? enPaymentMethod.visa
                     : enPaymentMethod.cash;
 
-            // Parse products
+            // Parse products using cache (no database calls)
             final Map<String, dynamic> productsData =
                 orderData['products'] ?? {};
             final Map<ProductModel, int> products = {};
@@ -50,8 +93,8 @@ class OrdersService {
             for (var productEntry in productsData.entries) {
               final int productID = int.parse(productEntry.key);
               final int quantity = productEntry.value;
-              final ProductModel? product = await ProductsService()
-                  .getProductById(productID);
+              final ProductModel? product = productCache[productID];
+
               if (product != null) {
                 products[product] = quantity;
               }
@@ -62,9 +105,8 @@ class OrdersService {
               orderDate: orderDate,
               totalPrice: totalPrice,
               products: products,
-              paymentMethod: paymentMethod, // Add payment method to constructor
+              paymentMethod: paymentMethod,
             );
-
             orders.add(order);
           }
 
@@ -78,14 +120,16 @@ class OrdersService {
         return [];
       }
     } catch (e) {
-      print("Error getting orders: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        buildCustomSnackBar(
-          title: "Oops!",
-          message:
-              "Something went wrong while fetching orders. Please try again.",
-        ),
-      );
+      debugPrint("Error getting orders: $e");
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          buildCustomSnackBar(
+            title: "Oops!",
+            message:
+                "Something went wrong while fetching orders. Please try again.",
+          ),
+        );
+      }
       return [];
     }
   }
