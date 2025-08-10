@@ -4,8 +4,9 @@ import 'package:e_commerce_app/Landing%20Page/views/landing_view.dart';
 import 'package:e_commerce_app/Landing%20Page/widgets/custom_button.dart';
 import 'package:e_commerce_app/Profile%20Orders%20Page/Orders/services/orders_service.dart';
 import 'package:e_commerce_app/Profile%20Orders%20Page/Orders/widgets/orders_history_card.dart';
-import 'package:e_commerce_app/global/helper/data.dart';
-import 'package:e_commerce_app/global/helper/methods.dart';
+import 'package:e_commerce_app/Profile%20Orders%20Page/Profile/helper/email_notifier.dart';
+import 'package:e_commerce_app/Profile%20Orders%20Page/Profile/helper/name_notifier.dart';
+import 'package:e_commerce_app/Profile%20Orders%20Page/Profile/widgets/confirm_pass_dialog_body.dart';
 import 'package:e_commerce_app/global/services/auth_service.dart';
 import 'package:e_commerce_app/global/services/realm_preference_service.dart';
 import 'package:e_commerce_app/global/widgets/custom_loading_indicator.dart';
@@ -29,6 +30,9 @@ class _ProfileViewState extends State<ProfileView> {
   void initState() {
     _initGetAllOrders = OrdersService.getOrders(context);
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NameNotifier.updateName(context);
+    });
   }
 
   @override
@@ -57,14 +61,24 @@ class _ProfileViewState extends State<ProfileView> {
             ),
           ),
           const SizedBox(height: 30),
-          CustomText(
-            text: currentUser?.name ?? "Customer",
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+          ValueListenableBuilder<String>(
+            valueListenable: NameNotifier.userName,
+            builder: (BuildContext context, String userName, Widget? child) {
+              return CustomText(
+                text: userName,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              );
+            },
           ),
-          Text(
-            getEmailEncrypted(currentUser?.email ?? ""),
-            style: const TextStyle(fontSize: 16, color: Color(0xff757575)),
+          ValueListenableBuilder<String>(
+            valueListenable: EmailNotifier.userEmail,
+            builder: (BuildContext context, String userEmail, Widget? child) {
+              return Text(
+                userEmail,
+                style: const TextStyle(fontSize: 16, color: Color(0xff757575)),
+              );
+            },
           ),
           const SizedBox(height: 25),
           CustomButton(
@@ -72,10 +86,13 @@ class _ProfileViewState extends State<ProfileView> {
             textColor: Colors.black,
             borderRadius: 0,
             backColor: const Color(0xffE9E9E9),
-            onTap: () async {
-              showAlertCustomDialog(
-                context,
-                title: "Editing Not Implemented Yet",
+            onTap: () {
+              showDialog(
+                context: context,
+                barrierDismissible: true, // Allow dismissing by tapping outside
+                builder: (BuildContext context) {
+                  return const ConfirmPassDialogBody();
+                },
               );
             },
           ),

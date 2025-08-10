@@ -14,7 +14,8 @@ class CustomTextFormField extends StatefulWidget {
     this.enabled,
     this.onChanged,
     this.inputFormatters,
-    this.textAlign = TextAlign.start, this.focusNode,
+    this.textAlign = TextAlign.start,
+    this.focusNode,
   });
 
   final String? hintText;
@@ -65,8 +66,8 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                   },
                   icon:
                       _isObscured
-                          ? const Icon(Icons.visibility_off)
-                          : const Icon(Icons.visibility),
+                          ? const Icon(Icons.visibility)
+                          : const Icon(Icons.visibility_off),
                 )
                 : null,
         errorMaxLines: 2,

@@ -1,6 +1,7 @@
 import 'package:e_commerce_app/Cart%20Sheet/widgets/custom_cart_draggable_scrollable_sheet.dart';
 import 'package:e_commerce_app/Fav%20Sheet/widgets/custom_fav_draggable_scrollable_sheet.dart';
 import 'package:e_commerce_app/Home%20Page/views/home_view.dart';
+import 'package:e_commerce_app/Main%20Screen/helper/cart_notifier.dart';
 import 'package:e_commerce_app/Main%20Screen/widgets/bottom_nav_bar_item.dart';
 import 'package:e_commerce_app/Main%20Screen/widgets/custom_shopping_cart_icon_button.dart';
 import 'package:e_commerce_app/Search%20Page/views/search_view.dart';
@@ -117,7 +118,7 @@ class _MainViewState extends State<MainView> {
                           _appBarSelectedIndex = 3;
                         });
                         await Future.delayed(const Duration(milliseconds: 200));
-                        showModalBottomSheet(
+                        await showModalBottomSheet(
                           barrierColor:
                               (_controller.page == 1)
                                   // ignore: deprecated_member_use
@@ -130,11 +131,10 @@ class _MainViewState extends State<MainView> {
                           builder:
                               (context) =>
                                   const CustomCartDraggablleScrollableSheet(),
-                        ).then((result) {
-                          setState(() {
-                            CartNotifier.updateCartCount(context);
-                            _appBarSelectedIndex = _prevAppBarSelectedIndex;
-                          });
+                        );
+                        setState(() {
+                          CartNotifier.updateCartCount(context);
+                          _appBarSelectedIndex = _prevAppBarSelectedIndex;
                         });
                       },
                       isSelected: _appBarSelectedIndex == 3,

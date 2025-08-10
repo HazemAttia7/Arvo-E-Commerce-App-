@@ -1,13 +1,11 @@
-import 'package:e_commerce_app/Create%20Account/models/temp_user_model.dart';
 import 'package:e_commerce_app/Create%20Account/services/email_service.dart';
 import 'package:e_commerce_app/Create%20Account/widgets/code_expiration_text.dart';
 import 'package:e_commerce_app/Landing%20Page/widgets/custom_button.dart';
-import 'package:e_commerce_app/Main%20Screen/views/main_view.dart';
-import 'package:e_commerce_app/global/helper/data.dart';
+import 'package:e_commerce_app/Profile%20Orders%20Page/Profile/helper/email_notifier.dart';
 import 'package:e_commerce_app/global/helper/methods.dart';
-import 'package:e_commerce_app/global/models/user_model.dart';
 import 'package:e_commerce_app/global/services/auth_service.dart';
 import 'package:e_commerce_app/global/services/realm_preference_service.dart';
+import 'package:e_commerce_app/global/widgets/custom_dialog.dart';
 import 'package:e_commerce_app/global/widgets/custom_loading_indicator.dart';
 import 'package:e_commerce_app/global/widgets/custom_text_form_field.dart';
 import 'package:flutter/gestures.dart';
@@ -15,15 +13,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
-class VerifyEmailForm extends StatefulWidget {
-  const VerifyEmailForm({super.key, required this.tempUserModel});
-  final TempUserModel tempUserModel;
+class VerifyEmailWhenEditForm extends StatefulWidget {
+  const VerifyEmailWhenEditForm({
+    super.key,
+    required this.email,
+    required this.pass,
+  });
+  final String email;
+  final String pass;
+
   @override
-  State<VerifyEmailForm> createState() => _VerifyEmailFormState();
+  State<VerifyEmailWhenEditForm> createState() =>
+      _VerifyEmailWhenEditFormState();
 }
 
-class _VerifyEmailFormState extends State<VerifyEmailForm> {
+class _VerifyEmailWhenEditFormState extends State<VerifyEmailWhenEditForm> {
   final GlobalKey<FormState> _formKey = GlobalKey();
   final GlobalKey<CodeExpirationTextState> _codeTimerKey = GlobalKey();
 
@@ -145,7 +149,7 @@ class _VerifyEmailFormState extends State<VerifyEmailForm> {
                                   _canResendCode = false;
                                 });
                                 EmailService.sendOTPWithPackage(
-                                  email: widget.tempUserModel.email,
+                                  email: widget.email,
                                 );
                               })
                             : null,
@@ -170,34 +174,42 @@ class _VerifyEmailFormState extends State<VerifyEmailForm> {
                           });
                         },
                       )) {
-                        bool accountCreated =
-                            await AuthService.performCreateAccount(
-                              context,
-                              userData: widget.tempUserModel,
-                              triggerLoading: () {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                              },
-                            );
+                        // For email editing, we need to update the user's email
+                        String? errorMessage = await AuthService.editEmail(
+                          password: widget.pass,
+                          newEmail: widget.email,
+                          triggerLoading: () {
+                            setState(() {
+                              isLoading = true;
+                            });
+                          },
+                        );
+                        await realmPreferenceService.setEmail(
+                          email: widget.email,
+                        );
                         setState(() {
                           isLoading = false;
                         });
-                        if (accountCreated) {
-                          currentUser = UserModel(
-                            name: widget.tempUserModel.name,
-                            email: widget.tempUserModel.email,
-                            favList: widget.tempUserModel.favList,
-                            shoppingCart: widget.tempUserModel.shoppingCart,
-                          );
-                          await realmPreferenceService.setRememberMePreference(
-                            remember: true,
-                            email: widget.tempUserModel.email,
-                          );
-                          Navigator.pushNamedAndRemoveUntil(
+
+                        if (errorMessage == null) {
+                          await showCustomDialog(
                             context,
-                            MainView.route,
-                            (Route<dynamic> route) => false,
+                            title: "Email",
+                            subtitle: "Changed Successfully !",
+                            image: "assets/images/success.png",
+                            state: enState.success,
+                          );
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                          EmailNotifier.updateEmail(context);
+                        } else {
+                          // Error updating email
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            buildCustomSnackBar(
+                              title: 'Failed!',
+                              message: errorMessage,
+                              backColor: const Color(0xFFF16B61),
+                            ),
                           );
                         }
                       } else {

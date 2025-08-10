@@ -11,7 +11,7 @@ Future<dynamic> showAlertCustomDialog(
         (context) => AlertDialog(
           title: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 40),
-            child: Text(title,textAlign: TextAlign.center,),
+            child: Text(title, textAlign: TextAlign.center),
           ),
         ),
   );
@@ -97,7 +97,12 @@ Future<dynamic> showCustomDialog(
     context: context,
     barrierDismissible: true, // Allow dismissing by tapping outside
     builder: (BuildContext context) {
-      return CustomDialog(title: title, subtitle: subtitle, image: image, state: state,);
+      return CustomDialogBody(
+        title: title,
+        subtitle: subtitle,
+        image: image,
+        state: state,
+      );
     },
   );
 }

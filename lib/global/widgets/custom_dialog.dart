@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 // ignore: camel_case_types
 enum enState { failure, success }
 
-class CustomDialog extends StatelessWidget {
-  const CustomDialog({
+class CustomDialogBody extends StatelessWidget {
+  const CustomDialogBody({
     super.key,
     required this.title,
     required this.subtitle,

@@ -4,7 +4,7 @@ import 'package:e_commerce_app/Home%20Page/widgets/custom_image_with_indicator_w
 import 'package:e_commerce_app/Home%20Page/widgets/custom_playfair_text.dart';
 import 'package:e_commerce_app/Home%20Page/widgets/clickable_modern_underlined_text.dart';
 import 'package:e_commerce_app/Home%20Page/widgets/price_text.dart';
-import 'package:e_commerce_app/Main%20Screen/widgets/custom_shopping_cart_icon_button.dart';
+import 'package:e_commerce_app/Main%20Screen/helper/cart_notifier.dart';
 import 'package:e_commerce_app/global/helper/data.dart';
 import 'package:e_commerce_app/global/models/product_model.dart';
 import 'package:e_commerce_app/global/services/products_service.dart';

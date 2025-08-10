@@ -21,12 +21,31 @@ class RealmPreferenceService {
     return preference?.userEmail;
   }
 
-  Future<void> setRememberMePreference({ required bool remember, String? email}) async {
+  Future<void> setRememberMePreference({
+    required bool remember,
+    String? email,
+  }) async {
     return _realm.writeAsync(() {
       _realm.add(
         RememberMePreference(
           'user_remember_me_flag',
           remember,
+          userEmail: email,
+        ),
+        update: true,
+      );
+    });
+  }
+
+  Future<void> setEmail({required String email}) async {
+    return _realm.writeAsync(() {
+      final existingPreference = _realm.all<RememberMePreference>().firstOrNull;
+
+      _realm.add(
+        RememberMePreference(
+          'user_remember_me_flag',
+          existingPreference?.shouldRemember ??
+              false, // Keep existing remember preference
           userEmail: email,
         ),
         update: true,

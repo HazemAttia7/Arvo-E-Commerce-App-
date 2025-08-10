@@ -11,8 +11,12 @@ class EmailService {
 
   static EmailOTP myauth = EmailOTP();
 
-  static Future<bool> sendOTPWithPackage(String email) async {
+  static Future<bool> sendOTPWithPackage({
+    required String email,
+    VoidCallback? triggerLoading,
+  }) async {
     try {
+      triggerLoading?.call();
       myauth.setConfig(
         appEmail: "ArvoSupport@gmail.com",
         appName: "Arvo",
@@ -30,7 +34,7 @@ class EmailService {
 
   static Future<bool> verifyOTPWithPackage(
     String otp, {
-    required VoidCallback triggerLoading
+    required VoidCallback triggerLoading,
   }) async {
     try {
       triggerLoading();

@@ -89,7 +89,17 @@ class _CreateAccountFormState extends State<CreateAccountForm> {
                         favList: [],
                         shoppingCart: {},
                       );
-                      if (await EmailService.sendOTPWithPackage(userEmail!)) {
+                      if (await EmailService.sendOTPWithPackage(
+                        email: userEmail!,
+                        triggerLoading: () {
+                          setState(() {
+                            isLoading = true;
+                          });
+                        },
+                      )) {
+                        setState(() {
+                          isLoading = false;
+                        });
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -102,6 +112,7 @@ class _CreateAccountFormState extends State<CreateAccountForm> {
                       }
                     } else {
                       setState(() {
+                        isLoading = false;
                         autoValidateMode = AutovalidateMode.always;
                       });
                     }

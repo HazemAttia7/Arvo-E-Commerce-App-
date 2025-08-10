@@ -78,6 +78,141 @@ class AuthService {
     }
   }
 
+  static Future<String?> confirmPasswordWithEmail(
+    BuildContext context, {
+    required String password,
+    required VoidCallback triggerLoading,
+  }) async {
+    try {
+      triggerLoading();
+
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: currentUser!.email.trim(),
+        password: password.trim(),
+      );
+
+      return null;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'user-not-found':
+          return 'No user found for that email.';
+        case 'wrong-password':
+          return 'Wrong password provided.';
+        case 'invalid-email':
+          return 'The email address is not valid.';
+        case 'user-disabled':
+          return 'This user account has been disabled.';
+        case 'too-many-requests':
+          return 'Too many failed attempts. Please try again later.';
+        case 'invalid-credential':
+          return 'Invalid password.';
+        default:
+          return null;
+      }
+    } catch (e) {
+      return "Something went wrong. Please try again.";
+    }
+  }
+
+  static Future<String?> editName({
+    required String newName,
+    required VoidCallback triggerLoading,
+  }) async {
+    try {
+      triggerLoading();
+      CollectionReference usersCollection = FirebaseFirestore.instance
+          .collection(usersCollectionName);
+      final querySnapshot =
+          await usersCollection
+              .where("Email", isEqualTo: currentUser!.email)
+              .limit(1)
+              .get();
+      if (querySnapshot.docs.isNotEmpty) {
+        final userDocRef = querySnapshot.docs.first.reference;
+        await userDocRef.update({"Name": newName});
+        currentUser!.name = newName;
+        debugPrint("Name updated to $newName for ${currentUser!.email}");
+
+        return null;
+      } else {
+        return "User document not found";
+      }
+    } catch (e) {
+      debugPrint("Error updating name: $e");
+
+      if (e is FirebaseException) {
+        switch (e.code) {
+          case 'permission-denied':
+            return "You don't have permission to update this information";
+          case 'not-found':
+            return "User document not found";
+          case 'unavailable':
+            return "Service temporarily unavailable. Please try again";
+          default:
+            return "Failed to update name: ${e.message}";
+        }
+      } else {
+        return "An unexpected error occurred. Please try again";
+      }
+    }
+  }
+
+  static Future<String?> editEmail({
+    required String newEmail,
+    required String password,
+    required VoidCallback triggerLoading,
+  }) async {
+    try {
+      //shoof 7al ll verify email before update
+      triggerLoading();
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: currentUser!.email,
+            password: password,
+          );
+
+      await userCredential.user!.delete();
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: newEmail,
+        password: password,
+      );
+      CollectionReference usersCollection = FirebaseFirestore.instance
+          .collection(usersCollectionName);
+      final querySnapshot =
+          await usersCollection
+              .where("Email", isEqualTo: currentUser!.email)
+              .limit(1)
+              .get();
+      if (querySnapshot.docs.isNotEmpty) {
+        final userDocRef = querySnapshot.docs.first.reference;
+        await userDocRef.update({"Email": newEmail});
+        currentUser!.email = newEmail;
+        debugPrint("Email updated to $newEmail");
+
+        return null;
+      } else {
+        return "User document not found";
+      }
+    } catch (e) {
+      debugPrint("Error updating email: $e");
+
+      if (e is FirebaseException) {
+        switch (e.code) {
+          case 'permission-denied':
+            return "You don't have permission to update this information";
+          case 'not-found':
+            return "User document not found";
+          case 'unavailable':
+            return "Service temporarily unavailable. Please try again";
+          default:
+            return "Failed to update email: ${e.message}";
+        }
+      } else {
+        return "An unexpected error occurred. Please try again";
+      }
+    }
+  }
+
   static Future<List<ProductModel>> _getListFromJSON(
     Map<String, dynamic> userData,
     String listName,
@@ -195,12 +330,12 @@ class AuthService {
 
   static Future<bool> sendPasswordReset({
     required BuildContext context,
-    required String email,
+     String? email,
     required VoidCallback triggerLoading,
   }) async {
     try {
       triggerLoading();
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email ?? currentUser!.email);
       return true;
     } on FirebaseAuthException catch (e) {
       showErrorMessage(

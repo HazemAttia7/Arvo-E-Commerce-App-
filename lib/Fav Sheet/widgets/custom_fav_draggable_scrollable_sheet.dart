@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:e_commerce_app/Fav%20Sheet/widgets/fav_product_card.dart';
-import 'package:e_commerce_app/Main%20Screen/widgets/custom_shopping_cart_icon_button.dart';
+import 'package:e_commerce_app/Main%20Screen/helper/cart_notifier.dart';
 import 'package:e_commerce_app/global/helper/methods.dart';
 import 'package:e_commerce_app/global/widgets/custom_dialog.dart';
 import 'package:e_commerce_app/global/widgets/custom_loading_indicator.dart';
